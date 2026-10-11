@@ -7,6 +7,11 @@ on:
       - 'One-S/**'
       - '.github/workflows/deploy-azure-blob.yml'
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit SHA, tag or branch to deploy (leave empty for latest main). Use for rollbacks.'
+        required: false
+        default: ''
 
 permissions:
   id-token: write # required for OIDC login to Azure
@@ -24,8 +29,18 @@ jobs:
         working-directory: One-S
 
     steps:
+      # Pushes deploy the pushed commit; manual runs can pick an older ref to roll back.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Show deployed version
+        env:
+          REQUESTED_REF: ${{ inputs.ref || 'latest' }}
+        run: |
+          echo "Deploying $(git rev-parse HEAD) (requested: $REQUESTED_REF)"
+          echo "Deployed commit: \`$(git rev-parse HEAD)\` (requested: \`$REQUESTED_REF\`)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup Node
         uses: actions/setup-node@v4

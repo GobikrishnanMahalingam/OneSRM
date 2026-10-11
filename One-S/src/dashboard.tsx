@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import {
-  Search, Bell, User, Grid, Bookmark, Calendar, FileText, Briefcase,
-  Sparkles, HelpCircle, Layers, ChevronRight, Mic, CheckCircle2, ArrowUpRight, X,
-  Clock, Award, Shield, DollarSign, Coffee, Globe, Cpu, ChevronDown,
-  Check, Info, MessageSquare, Sliders, Laptop, HeartPulse, FileCheck, BookOpen,
-  AlertTriangle, Headphones
+import { 
+  Search, Bell, User, Grid, Bookmark, Calendar, FileText, Briefcase, 
+  Sparkles, HelpCircle, Layers, ChevronRight, Mic, CheckCircle2, 
+  ArrowUpRight, Settings, Filter, X, Clock, Award, Shield, DollarSign, 
+  Coffee, Globe, Cpu, ChevronDown, Check, Info, LayoutDashboard, Plus,
+  MessageSquare, Sliders, Play, Laptop, HeartPulse, FileCheck, ExternalLink,
+  BookOpen, AlertTriangle, Monitor, Headphones, ThumbsUp, RefreshCw, Send
 } from 'lucide-react';
 
 const USER_PROFILE = {
@@ -74,6 +75,24 @@ const CATEGORIES = [
 
 const ALPHABET = ['All', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
 
+const SrmTechLogo = () => (
+  <div className="flex items-center space-x-2">
+    {/* 1S SRM Tech Typography */}
+    <div className="flex flex-col leading-none">
+      <div className="flex items-center font-bold tracking-tight text-xl">
+        <span className="bg-blue-600 text-white font-black px-1.5 py-0.5 rounded text-xs mr-1.5 shadow-sm border border-blue-400/50 inline-flex items-center justify-center leading-none">1S</span>
+        <span className="text-white font-extrabold">SRM</span>
+        <span className="text-cyan-400 font-bold ml-0.5">Tech</span>
+      </div>
+      <div className="flex items-center space-x-1 text-[7.5px] font-semibold text-slate-300 tracking-wider mt-0.5">
+        <span className="h-[1px] w-2 bg-slate-500 inline-block"></span>
+        <span className="lowercase font-mono text-slate-300">ideas@work</span>
+        <span className="h-[1px] w-2 bg-slate-500 inline-block"></span>
+      </div>
+    </div>
+  </div>
+);
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('news'); // 'news' | 'actions' | 'corner' | 'apps'
   const [subTab, setSubTab] = useState('activities'); // 'activities' | 'agents'
@@ -81,14 +100,13 @@ export default function App() {
   const [selectedLetter, setSelectedLetter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [showPitchBanner, setShowPitchBanner] = useState(true);
   
   // Modals & Drawers state
-  const [activeModal, setActiveModal] = useState<string | null>(null); // 'leave' | 'ncure' | 'profile' | null
+  const [activeModal, setActiveModal] = useState<string|null>(null); // 'leave' | 'ncure' | 'profile' | null
   const [isRecording, setIsRecording] = useState(false);
   const [leaveVoiceText, setLeaveVoiceText] = useState('');
   const [leaveDates, setLeaveDates] = useState({ start: '2026-10-12', end: '2026-10-14' });
-  const [toastMessage, setToastMessage] = useState(null);
+  const [toastMessage, setToastMessage] = useState<string|null>(null);
 
   // Filtered Apps
   const filteredApps = useMemo(() => {
@@ -120,46 +138,17 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col selection:bg-blue-600 selection:text-white relative">
       
-      {showPitchBanner && (
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border-b border-blue-500/30 px-4 py-2.5 text-white text-xs relative">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-            <div className="flex items-center space-x-2">
-              <span className="bg-blue-500 text-white font-extrabold px-2 py-0.5 rounded text-[10px] tracking-wider uppercase flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> CEO Pitch Mode
-              </span>
-              <span>
-                <strong>oneSRM Executive Proposal:</strong> Modernized Single-Sign-On Platform for <strong>Marisamy Pandarasamy (Emp ID: A3688)</strong> & Digital Practice Team.
-              </span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-slate-300 hidden sm:inline">Target: 100% Unified Employee Experience</span>
-              <button 
-                onClick={() => setShowPitchBanner(false)}
-                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Header */}
       <header className="bg-[#0b1329] text-white sticky top-0 z-40 shadow-lg border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             
-            {/* Brand Logo */}
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('news')}>
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-600 to-blue-700 flex items-center justify-center font-black text-white text-lg shadow-md border border-blue-400/40">
-                1S
-              </div>
-              <div className="flex items-baseline space-x-1.5">
-                <span className="font-bold text-lg tracking-tight text-white">oneSRM</span>
-                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-widest hidden sm:inline">Enterprise</span>
-              </div>
+            {/* Brand Logo - SRM Tech */}
+            <div className="flex items-center cursor-pointer" onClick={() => setActiveTab('news')}>
+              <SrmTechLogo />
             </div>
 
-            {/* Main Tabs Navigation (Exact replica of Cognizant layout) */}
+            {/* Main Tabs Navigation */}
             <nav className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium">
               <button 
                 onClick={() => setActiveTab('news')}
@@ -189,8 +178,6 @@ export default function App() {
 
             {/* Header Right Actions */}
             <div className="flex items-center space-x-3">
-              
-              {/* Notification Badge */}
               <button 
                 onClick={() => triggerToast('You have 2 pending approval actions.')}
                 className="relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
@@ -202,7 +189,6 @@ export default function App() {
                 </span>
               </button>
 
-              {/* Feedback / Chat */}
               <button 
                 onClick={() => triggerToast('Feedback module open.')}
                 className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition hidden sm:block"
@@ -211,7 +197,6 @@ export default function App() {
                 <MessageSquare className="w-5 h-5" />
               </button>
 
-              {/* User Profile Avatar Pill */}
               <div 
                 onClick={() => setActiveModal('profile')}
                 className="flex items-center space-x-2 pl-2 border-l border-slate-700 cursor-pointer hover:opacity-90 transition"
@@ -225,13 +210,13 @@ export default function App() {
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
               </div>
-
             </div>
 
           </div>
         </div>
       </header>
 
+      {}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         {/* ===================== TAB 1: NEWS & INFO ===================== */}
@@ -250,7 +235,7 @@ export default function App() {
                   </span>
                 </div>
                 <p className="text-blue-100 text-sm mb-6">
-                  {USER_PROFILE.department} • Emp ID: <strong className="text-white">{USER_PROFILE.empId}</strong> • Access your enterprise tools, learning pathways, and Group news.
+                  Access your enterprise tools, learning pathways, and Group news.
                 </p>
 
                 {/* Big Search Input */}
