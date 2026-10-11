@@ -1,0 +1,109 @@
+name: Deploy to Azure Blob Storage
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'One-S/**'
+      - '.github/workflows/deploy-azure-blob.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC login to Azure
+  contents: read
+
+concurrency:
+  group: deploy-azure-blob
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: One-S
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: One-S/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Snapshot of what this deploy publishes, used later to find stale blobs.
+      - name: Record build file list
+        run: (cd dist && find . -type f | sed 's|^\./||' | LC_ALL=C sort) > deployed-files.txt
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Hashed assets can be cached for a long time; index.html and other
+      # unhashed files must always be revalidated so new deploys show up.
+      - name: Upload hashed assets
+        run: |
+          az storage blob upload-batch \
+            --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" \
+            --auth-mode login \
+            --destination '$web' \
+            --destination-path assets \
+            --source dist/assets \
+            --overwrite \
+            --content-cache-control "public, max-age=31536000, immutable"
+
+      # Uploaded after the assets so index.html never points at missing files.
+      - name: Upload remaining files
+        run: |
+          rm -rf dist/assets
+          az storage blob upload-batch \
+            --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" \
+            --auth-mode login \
+            --destination '$web' \
+            --source dist \
+            --overwrite \
+            --content-cache-control "no-cache"
+
+      # Runs only after the new build is fully live, so the site is never
+      # missing files. Anything in $web not produced by this build is removed.
+      - name: Remove stale files
+        run: |
+          az storage blob list \
+            --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" \
+            --auth-mode login \
+            --container-name '$web' \
+            --num-results '*' \
+            --query "[].name" -o tsv | LC_ALL=C sort > remote-files.txt
+          LC_ALL=C comm -23 remote-files.txt deployed-files.txt > stale-files.txt
+          echo "Removing $(wc -l < stale-files.txt) stale file(s)"
+          while IFS= read -r name; do
+            echo "  - $name"
+            az storage blob delete \
+              --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" \
+              --auth-mode login \
+              --container-name '$web' \
+              --name "$name" \
+              --output none
+          done < stale-files.txt
+
+      - name: Show site URL
+        run: |
+          az storage account show \
+            --name "${{ vars.AZURE_STORAGE_ACCOUNT }}" \
+            --query "primaryEndpoints.web" -o tsv
+
+      - name: Azure logout
+        if: always()
+        run: az logout

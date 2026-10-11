@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Search, Bell, User, Grid, Bookmark, Calendar, FileText, Briefcase, 
-  Sparkles, HelpCircle, Layers, ChevronRight, Mic, CheckCircle2, 
-  ArrowUpRight, Settings, Filter, X, Clock, Award, Shield, DollarSign, 
-  Coffee, Globe, Cpu, ChevronDown, Check, Info, LayoutDashboard, Plus,
-  MessageSquare, Sliders, Play, Laptop, HeartPulse, FileCheck, ExternalLink,
-  BookOpen, AlertTriangle, Monitor, Headphones, ThumbsUp, RefreshCw, Send
+import { useState, useMemo } from 'react';
+import {
+  Search, Bell, User, Grid, Bookmark, Calendar, FileText, Briefcase,
+  Sparkles, HelpCircle, Layers, ChevronRight, Mic, CheckCircle2, ArrowUpRight, X,
+  Clock, Award, Shield, DollarSign, Coffee, Globe, Cpu, ChevronDown,
+  Check, Info, MessageSquare, Sliders, Laptop, HeartPulse, FileCheck, BookOpen,
+  AlertTriangle, Headphones
 } from 'lucide-react';
 
 const USER_PROFILE = {
