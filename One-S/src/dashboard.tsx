@@ -53,7 +53,7 @@ const ALL_APPS = [
 
   // News, Info & Dashboard (Alphabetical Index entries)
   { id: 'app-24', title: 'AI Builder Hub', category: 'News & Info', icon: Sparkles, favorite: true, badge: 'GenAI', desc: 'SRM enterprise LLM and automation suite' },
-  { id: 'app-25', title: 'Bluebolt Central', category: 'News & Info', icon: Globe, favorite: false, desc: 'Innovation submission portal' },
+  { id: 'app-25', title: 'IdeaX', category: 'News & Info', icon: Globe, favorite: false, desc: 'Innovation submission portal' },
   { id: 'app-26', title: 'On-Boarding', category: 'Directory', icon: User, favorite: false, desc: 'New joiner onboarding checklists' },
   { id: 'app-27', title: 'PeopleSoft HCM', category: 'Directory', icon: Layers, favorite: false, desc: 'Core human capital management portal' },
   { id: 'app-28', title: 'PRISM', category: 'Directory', icon: Cpu, favorite: false, desc: 'Project risk and metric tracker' },
@@ -540,8 +540,8 @@ export default function App() {
                   <button onClick={() => setActiveModal('ncure')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
                     Manage Assets <ArrowUpRight className="w-3 h-3" />
                   </button>
-                  <button onClick={() => triggerToast('Bluebolt Central innovation hub opened.')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
-                    Bluebolt Central <ArrowUpRight className="w-3 h-3" />
+                  <button onClick={() => triggerToast('IdeaX innovation hub opened.')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
+                    IdeaX<ArrowUpRight className="w-3 h-3" />
                   </button>
                 </div>
 
