@@ -26,10 +26,10 @@ const ALL_APPS = [
   { id: 'app-3', title: 'Work Scheduler', category: 'My Work', icon: Calendar, favorite: true, desc: 'Rosters and team duty allocations' },
   { id: 'app-4', title: 'View Assignments', category: 'My Work', icon: Briefcase, favorite: false, desc: 'Active project allocations and billing codes' },
   { id: 'app-5', title: 'Associate 360', category: 'My Work', icon: User, favorite: true, badge: 'Core', desc: 'Comprehensive employee profile and achievements' },
-  { id: 'app-6', title: 'GoPerform', category: 'My Work', icon: Award, favorite: true, badge: 'H2 Active', desc: 'Manage deliverables and performance goals' },
+  { id: 'app-6', title: 'IAspire', category: 'My Work', icon: Award, favorite: true, badge: 'H2 Active', desc: 'Manage deliverables and performance goals' },
   { id: 'app-7', title: 'Project General Info', category: 'My Work', icon: Info, favorite: false, desc: 'Departmental project status & approvers' },
   { id: 'app-8', title: 'Quick Assignment Modification', category: 'My Work', icon: Sliders, favorite: false, desc: 'Request role or project tag updates' },
-  { id: 'app-9', title: 'TruTime', category: 'My Work', icon: Clock, favorite: true, desc: 'Real-time swipe logs and work hours tracking' },
+  { id: 'app-9', title: 'MyTime', category: 'My Work', icon: Clock, favorite: true, desc: 'Real-time swipe logs and work hours tracking' },
 
   // My Benefits (15) & HR
   { id: 'app-10', title: 'Apply Leave - India', category: 'My Benefits', icon: Mic, favorite: true, badge: 'AI Voice', modal: 'leave', desc: 'Smart leave application with speech-to-text' },
@@ -47,7 +47,7 @@ const ALL_APPS = [
 
   // MyService Portal (64) & Utilities
   { id: 'app-20', title: 'Manage Assets', category: 'MyService Portal', icon: Laptop, favorite: true, desc: 'Track laptop, monitor, and software licenses' },
-  { id: 'app-21', title: 'NCure / Remediate Asset Issues', category: 'MyService Portal', icon: Headphones, favorite: true, modal: 'ncure', desc: 'Self-resolution for device technical issues' },
+  { id: 'app-21', title: 'ACure / Remediate Asset Issues', category: 'MyService Portal', icon: Headphones, favorite: true, modal: 'acure', desc: 'Self-resolution for device technical issues' },
   { id: 'app-22', title: 'Report Incidents', category: 'MyService Portal', icon: HelpCircle, favorite: false, desc: 'Raise IT, network, or hardware tickets' },
   { id: 'app-23', title: 'Visitor Management System', category: 'Utilities', icon: User, favorite: false, desc: 'Pre-register guests and VIP delegates' },
 
@@ -55,7 +55,7 @@ const ALL_APPS = [
   { id: 'app-24', title: 'AI Builder Hub', category: 'News & Info', icon: Sparkles, favorite: true, badge: 'GenAI', desc: 'SRM enterprise LLM and automation suite' },
   { id: 'app-25', title: 'IdeaX', category: 'News & Info', icon: Globe, favorite: false, desc: 'Innovation submission portal' },
   { id: 'app-26', title: 'On-Boarding', category: 'Directory', icon: User, favorite: false, desc: 'New joiner onboarding checklists' },
-  { id: 'app-27', title: 'PeopleSoft HCM', category: 'Directory', icon: Layers, favorite: false, desc: 'Core human capital management portal' },
+  { id: 'app-27', title: 'HCM', category: 'Directory', icon: Layers, favorite: false, desc: 'Core human capital management portal' },
   { id: 'app-28', title: 'PRISM', category: 'Directory', icon: Cpu, favorite: false, desc: 'Project risk and metric tracker' },
   { id: 'app-29', title: 'Outreach', category: 'Directory', icon: HeartPulse, favorite: false, desc: 'CSR and community volunteering' },
   { id: 'app-30', title: 'Visitor Management System', category: 'Directory', icon: User, favorite: false, desc: 'Passes for campus visitors' },
@@ -77,10 +77,10 @@ const ALPHABET = ['All', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
 
 const SrmTechLogo = () => (
   <div className="flex items-center space-x-2">
-    {/* 1S SRM Tech Typography */}
+    {/* 1SRM SRM Tech Typography */}
     <div className="flex flex-col leading-none">
       <div className="flex items-center font-bold tracking-tight text-xl">
-        <span className="bg-blue-600 text-white font-black px-1.5 py-0.5 rounded text-xs mr-1.5 shadow-sm border border-blue-400/50 inline-flex items-center justify-center leading-none">1S</span>
+        <span className="bg-blue-600 text-white font-black px-1.5 py-0.5 rounded text-xs mr-1.5 shadow-sm border border-blue-400/50 inline-flex items-center justify-center leading-none">1SRM</span>
         <span className="text-white font-extrabold">SRM</span>
         <span className="text-cyan-400 font-bold ml-0.5">Tech</span>
       </div>
@@ -145,8 +145,8 @@ const getBotReply = (input: string): Pick<ChatMessage, 'text' | 'actions'> => {
   }
   if (/laptop|device|asset|slow|wifi|vpn|issue|not working/.test(q)) {
     return {
-      text: 'NCure can diagnose and auto-fix most device issues in under 2 minutes. Shall I start a scan?',
-      actions: [{ label: 'Run NCure Diagnostics', modal: 'ncure' }, { label: 'Report Incident', app: findApp('app-22') }],
+      text: 'ACure can diagnose and auto-fix most device issues in under 2 minutes. Shall I start a scan?',
+      actions: [{ label: 'Run ACure Diagnostics', modal: 'acure' }, { label: 'Report Incident', app: findApp('app-22') }],
     };
   }
   if (/profile|360|my details/.test(q)) {
@@ -264,7 +264,7 @@ const ChatAssistant = ({ firstName, onAction }: { firstName: string; onAction: (
                   {msg.actions && (
                     <div className="mt-2 flex flex-col gap-1.5 w-full">
                       {msg.actions.map(action => {
-                        const Icon = action.app?.icon ?? (action.modal === 'leave' ? Mic : action.modal === 'ncure' ? Laptop : User);
+                        const Icon = action.app?.icon ?? (action.modal === 'leave' ? Mic : action.modal === 'acure' ? Laptop : User);
                         return (
                           <button
                             key={action.label}
@@ -369,7 +369,7 @@ export default function App() {
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   
   // Modals & Drawers state
-  const [activeModal, setActiveModal] = useState<string|null>(null); // 'leave' | 'ncure' | 'profile' | null
+  const [activeModal, setActiveModal] = useState<string|null>(null); // 'leave' | 'acure' | 'profile' | null
   const [isRecording, setIsRecording] = useState(false);
   const [leaveVoiceText, setLeaveVoiceText] = useState('');
   const [leaveDates, setLeaveDates] = useState({ start: '2026-10-12', end: '2026-10-14' });
@@ -537,7 +537,7 @@ export default function App() {
                   <button onClick={() => setActiveTab('apps')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
                     View Assignments <ArrowUpRight className="w-3 h-3" />
                   </button>
-                  <button onClick={() => setActiveModal('ncure')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
+                  <button onClick={() => setActiveModal('acure')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
                     Manage Assets <ArrowUpRight className="w-3 h-3" />
                   </button>
                   <button onClick={() => triggerToast('IdeaX innovation hub opened.')} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg border border-white/20 transition flex items-center gap-1">
@@ -718,13 +718,13 @@ export default function App() {
                       <Award className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-slate-900">GoPerform Deliverable Sign-off (H2)</h4>
+                      <h4 className="font-bold text-sm text-slate-900">IAspire Deliverable Sign-off (H2)</h4>
                       <p className="text-xs text-slate-600">Review deliverables notes for Digital Practice capability milestones.</p>
                       <p className="text-[11px] text-slate-500 mt-1">Assigned by Reporting Manager</p>
                     </div>
                   </div>
                   <button 
-                    onClick={() => triggerToast('Opening GoPerform deliverable notes...')}
+                    onClick={() => triggerToast('Opening IAspire deliverable notes...')}
                     className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg transition shrink-0"
                   >
                     Review Deliverables
@@ -850,7 +850,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Column 3: Remediate Asset Issues & GoPerform */}
+              {/* Column 3: Remediate Asset Issues & IAspire */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
                 <div>
                   <div className="bg-[#0b1329] text-white px-4 py-3 font-bold text-sm">
@@ -866,28 +866,28 @@ export default function App() {
                 </div>
 
                 <div className="p-4 border-t border-slate-100 bg-slate-50/80">
-                  <button onClick={() => setActiveModal('ncure')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg transition">
-                    NCure Diagnostic Tool
+                  <button onClick={() => setActiveModal('acure')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg transition">
+                    ACure Diagnostic Tool
                   </button>
                 </div>
               </div>
 
             </div>
 
-            {/* Row 2: GoPerform, Learning & Taxation (Matching Screenshot 4) */}
+            {/* Row 2: IAspire, Learning & Taxation (Matching Screenshot 4) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              {/* GoPerform Box */}
+              {/* IAspire Box */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                 <div className="bg-[#0b1329] text-white px-3 py-1.5 rounded-lg text-xs font-bold inline-block mb-3">
-                  GoPerform
+                  IAspire
                 </div>
                 <div className="text-center py-4">
                   <Award className="w-10 h-10 text-blue-600 mx-auto mb-2" />
                   <p className="text-xs font-semibold text-slate-700">Manage and add notes to H2 deliverables</p>
                 </div>
-                <button onClick={() => triggerToast('GoPerform loaded.')} className="w-full mt-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 transition">
-                  GoPerform Portal
+                <button onClick={() => triggerToast('IAspire loaded.')} className="w-full mt-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 transition">
+                  IAspire Portal
                 </button>
               </div>
 
@@ -1070,7 +1070,7 @@ export default function App() {
               {/* Alphabet Application Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
                 {[
-                  'On-Boarding', 'PeopleSoft HCM', 'PeopleSoft ESA', 'Insight Compass OAC', 'Visitor Management System',
+                  'On-Boarding', 'HCM', 'ESA', 'Insight Compass OAC', 'Visitor Management System',
                   'DB Read Access Tool', 'Clearance Automation', 'Enterprise Communication Framework', 'Global Business Card', 'LEARN',
                   'Enterprise System Inventory', 'Client Visit Experience', 'Outreach', 'PRISM', 'Quick SO',
                   'ID Card App', 'My I-94', 'TSmart', 'Green Card Status App', 'Safety Permit',
@@ -1109,13 +1109,13 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => setActiveModal('ncure')} 
+          onClick={() => setActiveModal('acure')} 
           className="p-2.5 text-white hover:bg-blue-600 rounded-xl transition relative group"
-          title="NCure Asset Diagnostics"
+          title="ACure Asset Diagnostics"
         >
           <Laptop className="w-5 h-5" />
           <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[11px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
-            NCure Diagnostics
+            ACure Diagnostics
           </span>
         </button>
 
@@ -1288,8 +1288,8 @@ export default function App() {
         </div>
       )}
 
-      {/* NCure Diagnostics Modal */}
-      {activeModal === 'ncure' && (
+      {/* ACure Diagnostics Modal */}
+      {activeModal === 'acure' && (
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-300">
             <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
@@ -1300,7 +1300,7 @@ export default function App() {
                 <Laptop className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-base text-slate-900">NCure Automated Diagnostics</h3>
+                <h3 className="font-bold text-base text-slate-900">ACure Automated Diagnostics</h3>
                 <p className="text-xs text-slate-500">Self-resolution for workstation & network issues</p>
               </div>
             </div>
