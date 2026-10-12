@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Search, Bell, User, Grid, Bookmark, Calendar, FileText, Briefcase, 
   Sparkles, HelpCircle, Layers, ChevronRight, Mic, CheckCircle2, 
-  ArrowUpRight, Settings, Filter, X, Clock, Award, Shield, DollarSign, 
-  Coffee, Globe, Cpu, ChevronDown, Check, Info, LayoutDashboard, Plus,
-  MessageSquare, Sliders, Play, Laptop, HeartPulse, FileCheck, ExternalLink,
-  BookOpen, AlertTriangle, Monitor, Headphones, ThumbsUp, RefreshCw, Send
+  ArrowUpRight, X, Clock, Award, Shield, DollarSign, 
+  Coffee, Globe, Cpu, ChevronDown, Check, Info, 
+  MessageSquare, Sliders, Laptop, HeartPulse, FileCheck,
+  BookOpen, AlertTriangle, Headphones, Send, RefreshCw, Bot
 } from 'lucide-react';
 
 const USER_PROFILE = {
@@ -92,6 +92,273 @@ const SrmTechLogo = () => (
     </div>
   </div>
 );
+
+// ===================== oneSRM ASSISTANT (CHATBOT) =====================
+type PortalApp = typeof ALL_APPS[number];
+
+type ChatAction = { label: string; app?: PortalApp; modal?: string };
+
+type ChatMessage = {
+  id: number;
+  from: 'bot' | 'user';
+  text: string;
+  time: string;
+  actions?: ChatAction[];
+};
+
+const CHAT_SUGGESTIONS = ['Apply leave', 'Download payslip', 'Submit timesheet', 'Laptop issue', 'Leave balance'];
+
+const findApp = (id: string) => ALL_APPS.find(a => a.id === id)!;
+
+const chatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+// Rule-based replies for the prototype; swap for a real assistant API later.
+const getBotReply = (input: string): Pick<ChatMessage, 'text' | 'actions'> => {
+  const q = input.toLowerCase();
+
+  if (/^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(q)) {
+    return { text: 'Hello! I can help you find apps, apply for leave, fix device issues and more. What do you need?' };
+  }
+  if (/leave balance|balance/.test(q)) {
+    return {
+      text: 'You have 8 Earned, 4 Casual and 6 Medical leave days available for 2026.',
+      actions: [{ label: 'View Leave Balance', app: findApp('app-12') }, { label: 'Apply Leave', modal: 'leave' }],
+    };
+  }
+  if (/leave|vacation|time off|holiday/.test(q)) {
+    return {
+      text: 'I can open the Voice AI Leave Assistant — just speak or type your dates and reason.',
+      actions: [{ label: 'Apply Leave with Voice AI', modal: 'leave' }, { label: 'Check Leave Balance', app: findApp('app-12') }],
+    };
+  }
+  if (/payslip|salary|form ?16|pay/.test(q)) {
+    return {
+      text: 'Your September 2026 payslip is ready. You can also download Form 16 from the same page.',
+      actions: [{ label: 'Download Payslip', app: findApp('app-11') }],
+    };
+  }
+  if (/timesheet|hours|log time/.test(q)) {
+    return {
+      text: 'Your timesheet for this week is due Friday. Want to submit it now?',
+      actions: [{ label: 'Submit Timesheet', app: findApp('app-1') }, { label: 'View Timesheet', app: findApp('app-2') }],
+    };
+  }
+  if (/laptop|device|asset|slow|wifi|vpn|issue|not working/.test(q)) {
+    return {
+      text: 'NCure can diagnose and auto-fix most device issues in under 2 minutes. Shall I start a scan?',
+      actions: [{ label: 'Run NCure Diagnostics', modal: 'ncure' }, { label: 'Report Incident', app: findApp('app-22') }],
+    };
+  }
+  if (/profile|360|my details/.test(q)) {
+    return { text: 'Here is your Associate 360 profile.', actions: [{ label: 'Open Associate 360', modal: 'profile' }] };
+  }
+
+  const words = q.split(/\s+/).filter(w => w.length > 2);
+  const matches = ALL_APPS.filter(a =>
+    words.some(w => a.title.toLowerCase().includes(w) || a.desc.toLowerCase().includes(w))
+  ).slice(0, 3);
+  if (matches.length) {
+    return {
+      text: `I found ${matches.length} app${matches.length > 1 ? 's' : ''} that might help:`,
+      actions: matches.map(app => ({ label: app.title, app })),
+    };
+  }
+  return { text: "Sorry, I couldn't find that. Try one of these, or rephrase your question." };
+};
+
+const ChatAssistant = ({ firstName, onAction }: { firstName: string; onAction: (action: ChatAction) => void }) => {
+  const welcome = (): ChatMessage => ({
+    id: 0,
+    from: 'bot',
+    text: `Hi ${firstName}! 👋 I'm your oneSRM Assistant. Ask me about leave, payslips, timesheets, IT issues or any portal app.`,
+    time: chatTime(),
+  });
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [welcome()]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
+  const nextId = useRef(1);
+  const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHasUnread(false);
+      inputRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  const send = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isTyping) return;
+    setMessages(m => [...m, { id: nextId.current++, from: 'user', text: trimmed, time: chatTime() }]);
+    setInput('');
+    setIsTyping(true);
+    setTimeout(() => {
+      setMessages(m => [...m, { id: nextId.current++, from: 'bot', time: chatTime(), ...getBotReply(trimmed) }]);
+      setIsTyping(false);
+    }, 700 + Math.random() * 500);
+  };
+
+  const reset = () => {
+    setMessages([welcome()]);
+    setIsTyping(false);
+  };
+
+  const showSuggestions = !isTyping && messages[messages.length - 1]?.from === 'bot' && !messages[messages.length - 1]?.actions;
+
+  return (
+    <>
+      {/* Chat panel */}
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-label="oneSRM Assistant"
+          className="fixed z-[45] bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[380px] h-[min(560px,calc(100vh-8rem))] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200"
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-[#0b1329] via-blue-950 to-indigo-900 text-white px-4 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border border-blue-400/40 shadow">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#0b1329] rounded-full"></span>
+              </div>
+              <div className="leading-tight">
+                <p className="font-bold text-sm">oneSRM Assistant</p>
+                <p className="text-[11px] text-emerald-300 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> AI powered • Online
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1">
+              <button onClick={reset} title="New conversation" className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+              <button onClick={() => setIsOpen(false)} title="Minimize" className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+                <ChevronDown className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-slate-50">
+            {messages.map(msg => (
+              <div key={msg.id} className={`flex items-end gap-2 animate-in fade-in slide-in-from-bottom-1 duration-200 ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.from === 'bot' && (
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                )}
+                <div className={`max-w-[78%] flex flex-col ${msg.from === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm ${msg.from === 'user' ? 'bg-blue-600 text-white rounded-2xl rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-bl-md'}`}>
+                    {msg.text}
+                  </div>
+                  {msg.actions && (
+                    <div className="mt-2 flex flex-col gap-1.5 w-full">
+                      {msg.actions.map(action => {
+                        const Icon = action.app?.icon ?? (action.modal === 'leave' ? Mic : action.modal === 'ncure' ? Laptop : User);
+                        return (
+                          <button
+                            key={action.label}
+                            onClick={() => onAction(action)}
+                            className="flex items-center gap-2 text-left text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-400 px-3 py-2 rounded-xl transition group"
+                          >
+                            <Icon className="w-4 h-4 shrink-0" />
+                            <span className="flex-1">{action.label}</span>
+                            <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <span className="text-[10px] text-slate-400 mt-1 px-1">{msg.time}</span>
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex items-end gap-2">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4" />
+                </div>
+                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                </div>
+              </div>
+            )}
+
+            {showSuggestions && (
+              <div className="flex flex-wrap gap-1.5 pl-9">
+                {CHAT_SUGGESTIONS.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-300 hover:border-blue-500 hover:text-blue-700 px-2.5 py-1 rounded-full transition"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Composer */}
+          <form
+            onSubmit={e => { e.preventDefault(); send(input); }}
+            className="border-t border-slate-200 bg-white p-3 flex items-center gap-2 shrink-0"
+          >
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Ask anything about oneSRM..."
+              className="flex-1 text-sm bg-slate-100 border border-transparent focus:border-blue-500 focus:bg-white rounded-xl px-3.5 py-2.5 outline-none transition"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isTyping}
+              title="Send"
+              className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white flex items-center justify-center transition shrink-0"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+          <p className="text-[10px] text-center text-slate-400 pb-2 bg-white">AI responses may be inaccurate. Verify important details.</p>
+        </div>
+      )}
+
+      {/* Launcher button */}
+      <button
+        onClick={() => setIsOpen(o => !o)}
+        aria-label={isOpen ? 'Close assistant' : 'Open oneSRM Assistant'}
+        className="fixed z-[45] bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 via-indigo-600 to-blue-700 text-white shadow-xl shadow-blue-600/40 hover:scale-105 active:scale-95 transition-transform flex items-center justify-center group border border-blue-400/40"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        {!isOpen && hasUnread && (
+          <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white"></span>
+          </span>
+        )}
+        {!isOpen && (
+          <span className="absolute right-full mr-3 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg">
+            Need help? Ask oneSRM Assistant
+          </span>
+        )}
+      </button>
+    </>
+  );
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('news'); // 'news' | 'actions' | 'corner' | 'apps'
@@ -1070,6 +1337,16 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* oneSRM Assistant chatbot (bottom-right) */}
+      <ChatAssistant
+        firstName={USER_PROFILE.name.split(' ')[0]}
+        onAction={(action) => {
+          if (action.modal) setActiveModal(action.modal);
+          else if (action.app?.modal) setActiveModal(action.app.modal);
+          else if (action.app) triggerToast(`Launching ${action.app.title}...`);
+        }}
+      />
 
       {/* Footer */}
       <footer className="bg-[#0b1329] text-slate-400 text-[11px] py-4 text-center border-t border-slate-800">
