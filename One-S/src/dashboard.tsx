@@ -5,19 +5,9 @@ import {
   ArrowUpRight, X, Clock, Award, Shield, DollarSign, 
   Coffee, Globe, Cpu, ChevronDown, Check, Info, 
   MessageSquare, Sliders, Laptop, HeartPulse, FileCheck,
-  BookOpen, AlertTriangle, Headphones, Send, RefreshCw, Bot
+  BookOpen, AlertTriangle, Headphones, Send, RefreshCw, Bot, LogOut
 } from 'lucide-react';
-
-const USER_PROFILE = {
-  name: "Marisamy Pandarasamy",
-  empId: "A3688",
-  department: "Digital Practice",
-  role: "Head - Business Developement",
-  location: "Coimbatore / Chennai, India",
-  initials: "MP",
-  email: "marisamy.pandarasamy@srmtech.com",
-  avatarBg: "from-blue-600 to-indigo-800"
-};
+import { useUserProfile } from './auth/UserProfile';
 
 const ALL_APPS = [
   // My Work (67)
@@ -77,10 +67,10 @@ const ALPHABET = ['All', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
 
 const SrmTechLogo = () => (
   <div className="flex items-center space-x-2">
-    {/* 1SRM SRM Tech Typography */}
+    {/* OneSRM SRM Tech Typography */}
     <div className="flex flex-col leading-none">
       <div className="flex items-center font-bold tracking-tight text-xl">
-        <span className="bg-blue-600 text-white font-black px-1.5 py-0.5 rounded text-xs mr-1.5 shadow-sm border border-blue-400/50 inline-flex items-center justify-center leading-none">1SRM</span>
+        <span className="bg-blue-600 text-white font-black px-1.5 py-0.5 rounded text-xs mr-1.5 shadow-sm border border-blue-400/50 inline-flex items-center justify-center leading-none">OneSRM</span>
         <span className="text-white font-extrabold">SRM</span>
         <span className="text-cyan-400 font-bold ml-0.5">Tech</span>
       </div>
@@ -361,6 +351,7 @@ const ChatAssistant = ({ firstName, onAction }: { firstName: string; onAction: (
 };
 
 export default function App() {
+  const { profile: USER_PROFILE, signOut } = useUserProfile();
   const [activeTab, setActiveTab] = useState('news'); // 'news' | 'actions' | 'corner' | 'apps'
   const [subTab, setSubTab] = useState('activities'); // 'activities' | 'agents'
   const [selectedCategory, setSelectedCategory] = useState('My Work');
@@ -473,7 +464,7 @@ export default function App() {
                 </div>
                 <div className="hidden lg:block text-left">
                   <p className="text-xs font-semibold text-slate-100 leading-tight">{USER_PROFILE.name}</p>
-                  <p className="text-[10px] text-blue-300 leading-none">{USER_PROFILE.empId} • {USER_PROFILE.department}</p>
+                  <p className="text-[10px] text-blue-300 leading-none">{[USER_PROFILE.empId, USER_PROFILE.department].filter(Boolean).join(' • ')}</p>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
               </div>
@@ -820,8 +811,8 @@ export default function App() {
                         <span className="font-bold text-slate-800">Personal Information Summary</span>
                       </div>
                       <p className="text-slate-600">Name: <strong className="text-slate-900">{USER_PROFILE.name}</strong></p>
-                      <p className="text-slate-600">Emp ID: <strong className="text-slate-900">{USER_PROFILE.empId}</strong></p>
-                      <p className="text-slate-600">Department: <strong className="text-slate-900">{USER_PROFILE.department}</strong></p>
+                      <p className="text-slate-600">Emp ID: <strong className="text-slate-900">{USER_PROFILE.empId || '—'}</strong></p>
+                      <p className="text-slate-600">Department: <strong className="text-slate-900">{USER_PROFILE.department || '—'}</strong></p>
                     </div>
 
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
@@ -1259,30 +1250,38 @@ export default function App() {
                 {USER_PROFILE.initials}
               </div>
               <h3 className="font-bold text-lg text-slate-900">{USER_PROFILE.name}</h3>
-              <p className="text-xs text-blue-600 font-bold mt-0.5">Emp ID: {USER_PROFILE.empId}</p>
+              {USER_PROFILE.empId && <p className="text-xs text-blue-600 font-bold mt-0.5">Emp ID: {USER_PROFILE.empId}</p>}
               <p className="text-xs text-slate-500">{USER_PROFILE.role}</p>
 
               <div className="mt-5 text-left text-xs space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-slate-500">Department:</span>
-                  <span className="font-bold text-slate-800">{USER_PROFILE.department}</span>
+                  <span className="font-bold text-slate-800 text-right">{USER_PROFILE.department || '—'}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-slate-500">Email:</span>
-                  <span className="font-bold text-slate-800">{USER_PROFILE.email}</span>
+                  <span className="font-bold text-slate-800 text-right break-all">{USER_PROFILE.email}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-slate-500">Location:</span>
-                  <span className="font-bold text-slate-800">{USER_PROFILE.location}</span>
+                  <span className="font-bold text-slate-800 text-right">{USER_PROFILE.location || '—'}</span>
                 </div>
               </div>
 
-              <button 
-                onClick={() => { setActiveModal(null); triggerToast('Profile updated!'); }}
-                className="w-full mt-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition"
-              >
-                Close Profile
-              </button>
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition"
+                >
+                  Close Profile
+                </button>
+                <button
+                  onClick={signOut}
+                  className="flex-1 py-2.5 bg-white text-red-600 border border-red-200 text-xs font-bold rounded-xl hover:bg-red-50 transition flex items-center justify-center gap-1.5"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> Sign out
+                </button>
+              </div>
             </div>
           </div>
         </div>
