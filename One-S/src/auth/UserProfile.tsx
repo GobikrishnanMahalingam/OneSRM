@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useMsal } from '@azure/msal-react';
 import type { AccountInfo } from '@azure/msal-browser';
 import { GRAPH_ME_URL, loginRequest } from './authConfig';
+import { getLastLoginTime, isAdmin } from './loginTracker';
 
 export type UserProfile = {
   name: string;
@@ -12,6 +13,7 @@ export type UserProfile = {
   initials: string;
   email: string;
   avatarBg: string;
+  lastLogin: string;
 };
 
 type GraphUser = {
@@ -26,7 +28,7 @@ type GraphUser = {
   country?: string | null;
 };
 
-type UserProfileContextValue = { profile: UserProfile; signOut: () => void };
+type UserProfileContextValue = { profile: UserProfile; account: AccountInfo; isAdmin: boolean; signOut: () => void };
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
@@ -61,7 +63,10 @@ export function UserProfileProvider({ account, children }: { account: AccountInf
         initials: getInitials(name),
         email: graphUser?.mail || graphUser?.userPrincipalName || account.username,
         avatarBg: 'from-blue-600 to-indigo-800',
+        lastLogin: getLastLoginTime(account)?.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) ?? '',
       },
+      account,
+      isAdmin: isAdmin(account),
       signOut: () => { void instance.logoutRedirect({ account }); },
     };
   }, [graphUser, account, instance]);

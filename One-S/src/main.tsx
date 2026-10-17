@@ -6,6 +6,7 @@ import './index.css'
 import App from './dashboard.tsx'
 import { isAuthConfigured, msalConfig } from './auth/authConfig'
 import { AuthConfigMissing, AuthGate } from './auth/AuthGate'
+import { recordLogin } from './auth/loginTracker'
 
 const root = createRoot(document.getElementById('root')!)
 
@@ -29,7 +30,11 @@ async function start() {
   let initialError: string | undefined
   try {
     const result = await msal.handleRedirectPromise()
-    if (result?.account) msal.setActiveAccount(result.account)
+    if (result?.account) {
+      msal.setActiveAccount(result.account)
+      // Fresh sign-in: log who logged in and when (best effort, never blocks the app).
+      recordLogin(msal, result.account).catch(e => console.warn('Could not record login', e))
+    }
   } catch (e) {
     initialError = e instanceof Error ? e.message : String(e)
   }

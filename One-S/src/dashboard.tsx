@@ -5,9 +5,10 @@ import {
   ArrowUpRight, X, Clock, Award, Shield, DollarSign, 
   Coffee, Globe, Cpu, ChevronDown, Check, Info, 
   MessageSquare, Sliders, Laptop, HeartPulse, FileCheck,
-  BookOpen, AlertTriangle, Headphones, Send, RefreshCw, Bot, LogOut
+  BookOpen, AlertTriangle, Headphones, Send, RefreshCw, Bot, LogOut, Users
 } from 'lucide-react';
 import { useUserProfile } from './auth/UserProfile';
+import LoginActivity from './admin/LoginActivity';
 
 const ALL_APPS = [
   // My Work (67)
@@ -351,7 +352,7 @@ const ChatAssistant = ({ firstName, onAction }: { firstName: string; onAction: (
 };
 
 export default function App() {
-  const { profile: USER_PROFILE, signOut } = useUserProfile();
+  const { profile: USER_PROFILE, signOut, isAdmin } = useUserProfile();
   const [activeTab, setActiveTab] = useState('news'); // 'news' | 'actions' | 'corner' | 'apps'
   const [subTab, setSubTab] = useState('activities'); // 'activities' | 'agents'
   const [selectedCategory, setSelectedCategory] = useState('My Work');
@@ -454,6 +455,16 @@ export default function App() {
               >
                 <MessageSquare className="w-5 h-5" />
               </button>
+
+              {isAdmin && (
+                <button
+                  onClick={() => setActiveModal('loginActivity')}
+                  className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
+                  title="Login activity (admin)"
+                >
+                  <Users className="w-5 h-5" />
+                </button>
+              )}
 
               <div 
                 onClick={() => setActiveModal('profile')}
@@ -1238,6 +1249,9 @@ export default function App() {
         </div>
       )}
 
+      {/* Admin: Login Activity grid */}
+      {activeModal === 'loginActivity' && isAdmin && <LoginActivity onClose={() => setActiveModal(null)} />}
+
       {/* Profile Details Modal */}
       {activeModal === 'profile' && (
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1265,6 +1279,10 @@ export default function App() {
                 <div className="flex justify-between gap-4">
                   <span className="text-slate-500">Location:</span>
                   <span className="font-bold text-slate-800 text-right">{USER_PROFILE.location || '—'}</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-slate-500">Last login:</span>
+                  <span className="font-bold text-slate-800 text-right">{USER_PROFILE.lastLogin || '—'}</span>
                 </div>
               </div>
 
