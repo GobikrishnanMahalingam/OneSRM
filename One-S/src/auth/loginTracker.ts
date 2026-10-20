@@ -7,7 +7,7 @@ import type { AccountInfo, IPublicClientApplication } from '@azure/msal-browser'
 // Signing in again upserts (merges) the same row, so the list never grows for existing users.
 const tableUrl = import.meta.env.VITE_LOGIN_TABLE_URL?.replace(/\/+$/, '') ?? '';
 
-const STORAGE_SCOPE = 'https://storage.azure.com/user_impersonation';
+export const STORAGE_SCOPE = 'https://storage.azure.com/user_impersonation';
 
 const lastLoginKey = (account: AccountInfo) => `onesrm.lastLogin.${account.username.toLowerCase()}`;
 

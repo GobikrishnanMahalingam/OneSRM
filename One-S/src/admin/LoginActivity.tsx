@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
-import { AlertTriangle, Loader2, RefreshCw, Search, Users, X } from 'lucide-react';
+import { AlertTriangle, KeyRound, Loader2, RefreshCw, Search, Users, X } from 'lucide-react';
 import { useUserProfile } from '../auth/UserProfile';
-import { isLoginLogConfigured, listLogins, type LoginRecord } from '../auth/loginTracker';
+import { isLoginLogConfigured, listLogins, STORAGE_SCOPE, type LoginRecord } from '../auth/loginTracker';
 
 const formatTime = (d: Date | null) =>
   d ? d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -48,6 +48,14 @@ export default function LoginActivity({ onClose }: { onClose: () => void }) {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [instance, account]);
+
+  // Azure Storage permission not yet approved for this user/app: approve it interactively.
+  const needsConsent = !!error && /AADSTS65001|consent_required|interaction_required/i.test(error);
+  const grantAccess = () => {
+    instance
+      .acquireTokenRedirect({ scopes: [STORAGE_SCOPE], account })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -108,7 +116,25 @@ export default function LoginActivity({ onClose }: { onClose: () => void }) {
             {error && (
               <div className="mx-5 mt-3 flex items-start gap-2 text-xs bg-red-50 border border-red-200 text-red-700 rounded-lg p-3">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span className="break-words">{error}</span>
+                <div className="flex-1">
+                  {needsConsent ? (
+                    <>
+                      <p className="font-semibold">OneSRM needs your permission to access Azure Storage.</p>
+                      <p className="mt-1">
+                        Click Grant access to approve it. If Microsoft says admin approval is required, ask an Entra admin to
+                        add <strong>Azure Storage → user_impersonation</strong> under the app's API permissions and grant admin consent.
+                      </p>
+                      <button
+                        onClick={grantAccess}
+                        className="mt-2 px-3 py-1.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 inline-flex items-center gap-1.5"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" /> Grant access
+                      </button>
+                    </>
+                  ) : (
+                    <span className="break-words">{error}</span>
+                  )}
+                </div>
               </div>
             )}
 
